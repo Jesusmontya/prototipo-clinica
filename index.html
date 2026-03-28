@@ -2,24 +2,37 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    
     <title>Acceso - SistemaGestion</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* CORRECCIÓN: Fondo de respaldo negro para el HTML */
+        html {
+            height: -webkit-fill-available;
+            background-color: #000;
+        }
+
         body {
-            
-            
             margin: 0;
+            padding: 0;
             font-family: system-ui, -apple-system, sans-serif;
             background: linear-gradient(-45deg, #000000, #1a1a1a, #0d0d0d, #222222);
             background-size: 400% 400%;
+            background-attachment: fixed; /* Mantiene el fondo quieto al scrollear */
             animation: gradientDark 15s ease infinite;
             color: #ffffff;
-            height: 100vh;
+            
+            /* CORRECCIÓN: Altura dinámica para cubrir toda la pantalla del cel */
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            
             display: flex;
             align-items: center;
             justify-content: center;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            overflow: hidden; /* Evita rebotes blancos */
         }
 
         @keyframes gradientDark {
@@ -121,14 +134,11 @@
             const btn = document.getElementById('btnLogin');
             const user = document.getElementById('userInput').value;
             
-            // Guardamos el nombre para que el Dashboard lo use (opcional)
             localStorage.setItem('usuarioSistema', user);
             
-            // Efecto visual de carga
             btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando...';
             btn.disabled = true;
             
-            // Simulación de acceso instantáneo para el prototipo
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
             }, 800);

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Dashboard - Panel de Control</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Fondo negro base para evitar destellos blancos */
+        html {
+            height: -webkit-fill-available;
+            background-color: #000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #000000, #1a1a1a, #0d0d0d, #222222);
+            background-size: 400% 400%;
+            background-attachment: fixed; /* Evita que el fondo rebote al scrollear */
+            animation: gradientDark 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes gradientDark {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1.2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+            transition: all 0.4s ease;
+        }
+
+        .glass-navbar {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-menu-glass {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.75rem;
+        }
+
+        .dropdown-item {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.95);
+            color: #000;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            text-shadow: none;
+        }
+
+        .form-control-glass {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            border-radius: 0.5rem;
+        }
+
+        .form-control-glass:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: #ffffff;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        select.form-control-glass option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .modal-content {
+            background: transparent;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark glass-navbar sticky-top">
+        <div class="container">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active fw-bold text-white px-3" href="dashboard.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 px-3" href="citas.html">Citas</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 px-3" href="pacientes.html">Pacientes</a></li>
+                </ul>
+            </div>
+
+            <div class="d-flex align-items-center ms-auto">
+                
+                <div class="dropdown me-3">
+                    <button class="btn btn-sm btn-outline-warning dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown" style="border-radius: 20px;">
+                        👁️ Vista: <span id="vistaActual">Admin</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-glass shadow small">
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('admin')">👑 Dueño / Admin</a></li>
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('doctor')">🩺 Doctor (Montoya)</a></li>
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('recepcion')">👩‍💻 Recepción</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userMenu" data-bs-toggle="dropdown">
+                        <div class="rounded-circle bg-white text-dark d-flex align-items-center justify-content-center fw-bold me-2" id="avatarPerfil" style="width: 32px; height: 32px; font-size: 0.8rem; text-shadow: none;">AD</div>
+                        <span class="d-none d-sm-inline small" id="nombrePerfil">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-glass shadow" aria-labelledby="userMenu">
+                        <li><a class="dropdown-item py-2" href="#">⚙️ Configuración</a></li>
+                        <li><hr class="dropdown-divider border-secondary opacity-50"></li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="index.html">🚪 Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <h2 class="fw-light mb-0" id="textoSaludo">Visión General, <span class="fw-bold">Administrador</span></h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light px-4 py-2" id="btnCobro" data-bs-toggle="modal" data-bs-target="#ingresoModal" style="border-radius: 0.5rem;">💰 Registrar Cobro</button>
+                    <button class="btn btn-glass px-4 py-2" data-bs-toggle="modal" data-bs-target="#nuevaCitaModal">+ Nueva Cita</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100 text-center text-md-start">
+                    <h6 class="text-muted-glass text-uppercase small" style="font-size: 0.7rem; letter-spacing: 1px;">Citas de Hoy</h6>
+                    <h1 class="display-4 fw-bold mb-0" id="contadorCitas">15</h1>
+                </div>
+            </div>
+            
+            <div class="col-md-4" id="tarjetaIngresosCol">
+                <div class="glass-card p-4 h-100 text-center text-md-start">
+                    <h6 class="text-muted-glass text-uppercase small" style="font-size: 0.7rem; letter-spacing: 1px;">Ingresos Hoy</h6>
+                    <h1 class="display-4 fw-bold mb-0 text-success" id="contadorIngresos">$24,500</h1>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100" id="tarjetaProximo">
+                    <h6 class="text-muted-glass text-uppercase small" style="font-size: 0.7rem; letter-spacing: 1px;">Próximo Paciente</h6>
+                    <h4 class="fw-bold mt-2">Carlos Mendoza</h4>
+                    <p class="text-white-50 mb-0 small">18:00 hrs - Revisión General</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4" id="seccionDesglose" style="display: none;">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <h6 class="text-muted-glass text-uppercase mb-3" style="font-size: 0.7rem; letter-spacing: 1px;">Desglose de Ingresos por Doctor (Hoy)</h6>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="flex-fill bg-dark bg-opacity-50 p-3 rounded border border-secondary border-opacity-25 text-center text-md-start">
+                            <div class="small text-white-50 mb-1">Dr. Montoya</div>
+                            <h4 class="fw-bold text-success mb-0">$4,500</h4>
+                        </div>
+                        <div class="flex-fill bg-dark bg-opacity-50 p-3 rounded border border-secondary border-opacity-25 text-center text-md-start">
+                            <div class="small text-white-50 mb-1">Dra. Salas</div>
+                            <h4 class="fw-bold text-success mb-0">$8,200</h4>
+                        </div>
+                        <div class="flex-fill bg-dark bg-opacity-50 p-3 rounded border border-secondary border-opacity-25 text-center text-md-start">
+                            <div class="small text-white-50 mb-1">Dr. Ruiz</div>
+                            <h4 class="fw-bold text-success mb-0">$11,800</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4" id="seccionGrafica">
+            <div class="col-12">
+                <div class="glass-card p-4">
+                    <h6 class="text-muted-glass text-uppercase mb-4" style="font-size: 0.7rem; letter-spacing: 1px;">Tendencia Semanal de Ingresos (Clínica)</h6>
+                    <div style="height: 300px;"><canvas id="graficaIngresos"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="nuevaCitaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-2">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Nueva Cita</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevaCita">
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-glass" id="nombrePaciente" placeholder="Nombre del Paciente" required>
+                        </div>
+                        <div class="mb-3">
+                            <select class="form-control form-control-glass" id="doctorAsignado" required>
+                                <option value="" disabled selected>Selecciona Doctor Asignado...</option>
+                                <option value="Dr. Montoya">Dr. Montoya (General)</option>
+                                <option value="Dra. Salas">Dra. Salas (Pediatría)</option>
+                                <option value="Dr. Ruiz">Dr. Ruiz (Traumatología)</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6"><input type="date" class="form-control form-control-glass" required></div>
+                            <div class="col-6"><input type="time" class="form-control form-control-glass" required></div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-glass" id="descRapida" placeholder="Descripción rápida (Ej. Seguimiento)">
+                        </div>
+                        <div class="mb-4">
+                            <textarea class="form-control form-control-glass" id="descLarga" rows="3" placeholder="Descripción larga / Notas adicionales"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-glass w-100 py-2">Agendar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ingresoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-2">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Registrar Cobro</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoIngreso">
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-glass" placeholder="Concepto (Ej. Consulta Dr. Montoya)" required>
+                        </div>
+                        <div class="mb-4">
+                            <input type="number" class="form-control form-control-glass" id="montoIngreso" placeholder="Monto ($)" required>
+                        </div>
+                        <button type="submit" class="btn btn-glass w-100 py-2">Registrar en Caja</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- Gráfica Base ---
+        const ctx = document.getElementById('graficaIngresos').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+                datasets: [{
+                    label: 'Ingresos Totales',
+                    data: [12500, 18300, 15800, 24500, 21900, 31500],
+                    borderColor: '#fff',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                    x: { ticks: { color: '#fff' } }
+                }
+            }
+        });
+
+        // --- LÓGICA DEL SIMULADOR DE ROLES ---
+        let rolActual = 'admin';
+        
+        function cambiarRol(rol) {
+            rolActual = rol;
+            const vistaText = document.getElementById('vistaActual');
+            const saludo = document.getElementById('textoSaludo');
+            const nombrePerfil = document.getElementById('nombrePerfil');
+            const avatarPerfil = document.getElementById('avatarPerfil');
+            
+            const btnCobro = document.getElementById('btnCobro');
+            const colIngresos = document.getElementById('tarjetaIngresosCol');
+            const secGrafica = document.getElementById('seccionGrafica');
+            const secDesglose = document.getElementById('seccionDesglose');
+            const textIngresos = document.getElementById('contadorIngresos');
+
+            if(rol === 'admin') {
+                vistaText.innerText = 'Dueño';
+                saludo.innerHTML = 'Visión General, <span class="fw-bold">Administrador</span>';
+                nombrePerfil.innerText = 'Admin';
+                avatarPerfil.innerText = 'AD';
+                
+                btnCobro.style.display = 'inline-block';
+                colIngresos.style.display = 'block';
+                secGrafica.style.display = 'block';
+                secDesglose.style.display = 'flex'; // Muestra el desglose
+                textIngresos.innerText = '$24,500';
+                textIngresos.classList.add('text-success');
+
+            } else if(rol === 'doctor') {
+                vistaText.innerText = 'Doctor';
+                saludo.innerHTML = 'Hola, <span class="fw-bold">Dr. Montoya</span>';
+                nombrePerfil.innerText = 'Dr. Montoya';
+                avatarPerfil.innerText = 'JM';
+                
+                btnCobro.style.display = 'none';
+                colIngresos.style.display = 'block';
+                secGrafica.style.display = 'none';
+                secDesglose.style.display = 'none'; // Oculta el desglose
+                textIngresos.innerText = '$4,500';
+                textIngresos.classList.remove('text-success');
+
+            } else if(rol === 'recepcion') {
+                vistaText.innerText = 'Recepción';
+                saludo.innerHTML = 'Turno Actual, <span class="fw-bold">Recepción</span>';
+                nombrePerfil.innerText = 'Recepción';
+                avatarPerfil.innerText = 'RC';
+                
+                btnCobro.style.display = 'inline-block';
+                colIngresos.style.display = 'none';
+                secGrafica.style.display = 'none';
+                secDesglose.style.display = 'none'; // Oculta el desglose
+            }
+        }
+
+        // --- Lógica Interactiva Básica ---
+        document.getElementById('formNuevaCita').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombrePaciente').value;
+            bootstrap.Modal.getInstance(document.getElementById('nuevaCitaModal')).hide();
+            document.getElementById('contadorCitas').innerText = parseInt(document.getElementById('contadorCitas').innerText) + 1;
+            document.querySelector('#tarjetaProximo h4').innerText = nombre;
+            this.reset();
+        });
+
+        document.getElementById('formNuevoIngreso').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const monto = parseFloat(document.getElementById('montoIngreso').value);
+            bootstrap.Modal.getInstance(document.getElementById('ingresoModal')).hide();
+            
+            if(rolActual === 'admin') {
+                let valorActual = parseInt(document.getElementById('contadorIngresos').innerText.replace('$', '').replace(',', ''));
+                let nuevoMonto = valorActual + monto;
+                document.getElementById('contadorIngresos').innerText = "$" + nuevoMonto.toLocaleString();
+            }
+            this.reset();
+        });
+
+        // Revisar si hay un usuario guardado del Login para el saludo
+        const userGuardado = localStorage.getItem('usuarioSistema');
+        if(userGuardado) {
+            // Se podría actualizar aquí, pero como el simulador sobreescribe todo al iniciar, 
+            // nos mantenemos con el rol de Admin por defecto para la demo.
+        }
+
+        cambiarRol('admin');
+    </script>
+</body>
+</html>

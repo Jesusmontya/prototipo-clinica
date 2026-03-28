@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    
+    <title>Prototipo - Agenda de Citas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Fondo negro base para evitar destellos blancos */
+        html {
+            height: -webkit-fill-available;
+            background-color: #000;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(-45deg, #000000, #1a1a1a, #0d0d0d, #222222);
+            background-size: 400% 400%;
+            background-attachment: fixed; /* Evita que el fondo rebote al scrollear */
+            animation: gradientDark 15s ease infinite;
+            color: #ffffff;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow-x: hidden;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes gradientDark {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1.2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-navbar {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-menu-glass {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.75rem;
+            margin-top: 10px;
+        }
+
+        .dropdown-item {
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.95);
+            color: #000;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            text-shadow: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-glass:hover {
+            background: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+            color: #000;
+        }
+
+        .text-muted-glass {
+            color: rgba(255, 255, 255, 0.85) !important; 
+            font-weight: 400;
+        }
+
+        .table-glass {
+            color: #ffffff;
+            margin-bottom: 0;
+        }
+        
+        .table-glass th {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .table-glass td {
+            background: transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            vertical-align: middle;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .table-glass tbody tr:hover td {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .badge-pendiente { background: rgba(255, 193, 7, 0.2); color: #ffdca8; border: 1px solid #ffc107; text-shadow: none;}
+        .badge-completada { background: rgba(25, 135, 84, 0.2); color: #a3ffce; border: 1px solid #20c997; text-shadow: none;}
+        .badge-cancelada { background: rgba(220, 53, 69, 0.2); color: #ffb3b3; border: 1px solid #ff6b6b; text-shadow: none;}
+
+        .form-control-glass {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        select.form-control-glass option {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .modal-content {
+            background: transparent;
+            border: none;
+        }
+
+        /* Estilos Botón WhatsApp */
+        .btn-whatsapp {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+        .btn-whatsapp:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .btn-urgent {
+            background: #25D366 !important;
+            color: white !important;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+            animation: pulse-green 2s infinite;
+            border: none;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Estilos para el historial clínico */
+        .historial-item {
+            border-left: 2px solid rgba(255,255,255,0.3);
+            padding-left: 15px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .historial-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+        }
+
+        /* Clase de utilidad para ocultar filas suavemente */
+        .fila-oculta {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark glass-navbar sticky-top">
+        <div class="container">
+            <button class="navbar-toggler border-0 me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-white-50 px-3" href="dashboard.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-bold text-white px-3" href="citas.html">Citas</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50 px-3" href="pacientes.html">Pacientes</a></li>
+                </ul>
+            </div>
+
+            <div class="d-flex align-items-center ms-auto order-lg-last">
+                <div class="dropdown me-3">
+                    <button class="btn btn-sm btn-outline-warning dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown" style="border-radius: 20px;">
+                        👁️ Vista: <span id="vistaActual">Admin</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-glass shadow small">
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('admin')">👑 Dueño / Admin</a></li>
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('Dr. Montoya')">🩺 Doctor (Montoya)</a></li>
+                        <li><a class="dropdown-item py-2" href="#" onclick="cambiarRol('recepcion')">👩‍💻 Recepción</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userMenu" data-bs-toggle="dropdown">
+                        <div class="rounded-circle bg-white text-dark d-flex align-items-center justify-content-center fw-bold me-2" id="avatarPerfil" style="width: 32px; height: 32px; font-size: 0.8rem; text-shadow: none;">AD</div>
+                        <span class="d-none d-sm-inline small" id="nombrePerfil">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-glass shadow">
+                        <li><a class="dropdown-item py-2" href="#">⚙️ Configuración</a></li>
+                        <li><hr class="dropdown-divider border-secondary opacity-50"></li>
+                        <li><a class="dropdown-item py-2 text-danger fw-bold" href="index.html">🚪 Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row mb-4 align-items-end">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <h2 class="fw-light mb-0" id="tituloCitas">Agenda de <span class="fw-bold">Citas</span></h2>
+                <p class="text-muted-glass mb-0" id="subtituloCitas">Gestiona los horarios y pacientes de toda la clínica</p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-md-end gap-2">
+                <input type="date" class="form-control form-control-glass w-auto" value="2026-03-27">
+                <button class="btn btn-glass px-4" data-bs-toggle="modal" data-bs-target="#nuevaCitaModal" id="btnAgendarGeneral">+ Agendar</button>
+            </div>
+        </div>
+
+        <div class="glass-card overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-glass table-borderless" id="tablaCitas">
+                    <thead>
+                        <tr>
+                            <th class="ps-4 py-3">Hora</th>
+                            <th class="py-3">Paciente</th>
+                            <th class="py-3">Motivo / Médico</th>
+                            <th class="py-3 text-center">Estado</th>
+                            <th class="pe-4 py-3 text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-hora="08:00" data-doctor="Dra. Salas">
+                            <td class="ps-4 fw-bold">08:00 AM</td>
+                            <td>
+                                <div class="fw-bold fs-6">Sofía Beltrán</div>
+                                <div class="text-muted-glass small">ID: #88392</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Consulta Pediátrica</div>
+                                <div class="text-white-50 small italic"><em>Dra. Salas</em></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-completada px-3 py-2 rounded-pill" id="badge-0">Completada</span>
+                            </td>
+                            <td class="pe-4 text-end text-nowrap">
+                                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('Sofía Beltrán', '6', 'Dra. Salas')">🗂️ Expediente</button>
+                            </td>
+                        </tr>
+
+                        <tr data-hora="11:30" data-doctor="Dr. Montoya">
+                            <td class="ps-4 fw-bold">11:30 AM</td>
+                            <td>
+                                <div class="fw-bold fs-6">Roberto Sánchez</div>
+                                <div class="text-muted-glass small">ID: #98224</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Seguimiento ansiedad</div>
+                                <div class="text-white-50 small italic"><em>Dr. Montoya</em></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-pendiente px-3 py-2 rounded-pill" id="badge-2">Pendiente</span>
+                            </td>
+                            <td class="pe-4 text-end text-nowrap">
+                                <div class="btn-group me-1">
+                                    <button class="btn btn-sm btn-outline-success border-0" onclick="marcarCompletada('badge-2')" title="Marcar como Completada">✔️</button>
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="marcarCancelada('badge-2')" title="Cancelar Cita">❌</button>
+                                </div>
+                                <button class="btn btn-sm btn-whatsapp me-1" onclick="enviarRecordatorio('Roberto Sánchez', '11:30 AM', '526671234567')" title="Enviar Recordatorio">💬 WhatsApp</button>
+                                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('Roberto Sánchez', '38', 'Dr. Montoya')">🗂️ Expediente</button>
+                            </td>
+                        </tr>
+
+                        <tr data-hora="14:15" data-doctor="Dr. Ruiz">
+                            <td class="ps-4 fw-bold">02:15 PM</td>
+                            <td>
+                                <div class="fw-bold fs-6">Jorge Luis Gastélum</div>
+                                <div class="text-muted-glass small">ID: #44910</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Revisión de Rodilla</div>
+                                <div class="text-white-50 small italic"><em>Dr. Ruiz</em></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-pendiente px-3 py-2 rounded-pill" id="badge-3">Pendiente</span>
+                            </td>
+                            <td class="pe-4 text-end text-nowrap">
+                                <div class="btn-group me-1">
+                                    <button class="btn btn-sm btn-outline-success border-0" onclick="marcarCompletada('badge-3')" title="Marcar como Completada">✔️</button>
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="marcarCancelada('badge-3')" title="Cancelar Cita">❌</button>
+                                </div>
+                                <button class="btn btn-sm btn-whatsapp me-1" onclick="enviarRecordatorio('Jorge Luis Gastélum', '02:15 PM', '526671234567')" title="Enviar Recordatorio">💬 WhatsApp</button>
+                                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('Jorge Luis Gastélum', '52', 'Dr. Ruiz')">🗂️ Expediente</button>
+                            </td>
+                        </tr>
+
+                        <tr data-hora="16:00" data-doctor="Dr. Montoya">
+                            <td class="ps-4 fw-bold">04:00 PM</td>
+                            <td>
+                                <div class="fw-bold fs-6">Ana María Espinoza</div>
+                                <div class="text-muted-glass small">ID: #11029</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Control de Presión</div>
+                                <div class="text-white-50 small italic"><em>Dr. Montoya</em></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-pendiente px-3 py-2 rounded-pill" id="badge-4">Pendiente</span>
+                            </td>
+                            <td class="pe-4 text-end text-nowrap">
+                                <div class="btn-group me-1">
+                                    <button class="btn btn-sm btn-outline-success border-0" onclick="marcarCompletada('badge-4')" title="Marcar como Completada">✔️</button>
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="marcarCancelada('badge-4')" title="Cancelar Cita">❌</button>
+                                </div>
+                                <button class="btn btn-sm btn-whatsapp me-1" onclick="enviarRecordatorio('Ana María Espinoza', '04:00 PM', '526671234567')" title="Enviar Recordatorio">💬 WhatsApp</button>
+                                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('Ana María Espinoza', '29', 'Dr. Montoya')">🗂️ Expediente</button>
+                            </td>
+                        </tr>
+
+                        <tr data-hora="18:45" data-doctor="Dr. Ruiz">
+                            <td class="ps-4 fw-bold">06:45 PM</td>
+                            <td>
+                                <div class="fw-bold fs-6">Mario Cárdenas</div>
+                                <div class="text-muted-glass small">ID: #77281</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Extracción de puntos</div>
+                                <div class="text-white-50 small italic"><em>Dr. Ruiz</em></div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-pendiente px-3 py-2 rounded-pill" id="badge-5">Pendiente</span>
+                            </td>
+                            <td class="pe-4 text-end text-nowrap">
+                                <div class="btn-group me-1">
+                                    <button class="btn btn-sm btn-outline-success border-0" onclick="marcarCompletada('badge-5')" title="Marcar como Completada">✔️</button>
+                                    <button class="btn btn-sm btn-outline-danger border-0" onclick="marcarCancelada('badge-5')" title="Cancelar Cita">❌</button>
+                                </div>
+                                <button class="btn btn-sm btn-whatsapp me-1" onclick="enviarRecordatorio('Mario Cárdenas', '06:45 PM', '526671234567')" title="Enviar Recordatorio">💬 WhatsApp</button>
+                                <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('Mario Cárdenas', '45', 'Dr. Ruiz')">🗂️ Expediente</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="nuevaCitaModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card p-2">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Nueva Cita</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevaCita">
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-glass" id="nombrePaciente" placeholder="Nombre del Paciente" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <select class="form-control form-control-glass" id="doctorAsignado" required>
+                                <option value="" disabled selected>Selecciona Doctor...</option>
+                                <option value="Dr. Montoya">Dr. Montoya (General)</option>
+                                <option value="Dra. Salas">Dra. Salas (Pediatría)</option>
+                                <option value="Dr. Ruiz">Dr. Ruiz (Traumatología)</option>
+                            </select>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6"><input type="date" class="form-control form-control-glass" id="fechaCita" required></div>
+                            <div class="col-6"><input type="time" class="form-control form-control-glass" id="horaCita" required></div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-glass" id="descRapida" placeholder="Descripción rápida (Motivo corto)">
+                        </div>
+                        <div class="mb-4">
+                            <textarea class="form-control form-control-glass" id="descLarga" rows="3" placeholder="Descripción larga / Notas adicionales"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-glass w-100 py-2">Agendar Cita</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="expedienteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content glass-card p-2">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h4 class="modal-title fw-bold mb-0" id="expNombre">Nombre del Paciente</h4>
+                        <p class="text-white-50 small mb-0"><span id="expEdad">Edad</span> años • ID: #<span id="expId">00000</span> • <span id="expDoctor">Doctor</span></p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-4">
+                        <div class="col-md-5 border-end border-secondary border-opacity-25 pe-md-4">
+                            <h6 class="text-uppercase small fw-bold text-white-50 mb-4">Historial de Consultas</h6>
+                            <div class="historial-item">
+                                <div class="small fw-bold text-info">15 de Febrero, 2026</div>
+                                <div class="fw-bold mt-1">Revisión General</div>
+                                <p class="small text-white-50 mb-1">Paciente presentó dolor leve. Se recetó analgésico.</p>
+                            </div>
+                            <div class="historial-item">
+                                <div class="small fw-bold text-info">10 de Enero, 2026</div>
+                                <div class="fw-bold mt-1">Primera Consulta</div>
+                                <p class="small text-white-50 mb-0">Apertura de expediente. Sin alergias conocidas.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-7 ps-md-4">
+                            <h6 class="text-uppercase small fw-bold text-white-50 mb-3">Agregar Nota de Evolución</h6>
+                            <form id="formNuevaNota">
+                                <div class="mb-3">
+                                    <label class="form-label small text-white-50">Motivo / Diagnóstico</label>
+                                    <input type="text" class="form-control form-control-glass" placeholder="Ej. Faringitis Aguda" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small text-white-50">Tratamiento / Receta</label>
+                                    <textarea class="form-control form-control-glass" rows="3" placeholder="Medicamentos y dosis..." required></textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label small text-white-50">Observaciones Privadas</label>
+                                    <textarea class="form-control form-control-glass" rows="2" placeholder="Notas internas para el doctor..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-glass w-100">💾 Guardar en Historial</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- LÓGICA DEL SIMULADOR DE ROLES EN CITAS ---
+        let rolActual = 'admin';
+        
+        function cambiarRol(rol) {
+            rolActual = rol;
+            const vistaText = document.getElementById('vistaActual');
+            const titulo = document.getElementById('tituloCitas');
+            const subtitulo = document.getElementById('subtituloCitas');
+            const nombrePerfil = document.getElementById('nombrePerfil');
+            const avatarPerfil = document.getElementById('avatarPerfil');
+            const filasTabla = document.querySelectorAll('#tablaCitas tbody tr');
+            
+            if(rol === 'admin') {
+                vistaText.innerText = 'Dueño';
+                titulo.innerHTML = 'Agenda <span class="fw-bold">Global</span>';
+                subtitulo.innerText = 'Gestiona los horarios y pacientes de toda la clínica';
+                nombrePerfil.innerText = 'Admin';
+                avatarPerfil.innerText = 'AD';
+                filasTabla.forEach(fila => fila.classList.remove('fila-oculta'));
+            } else if(rol === 'Dr. Montoya') {
+                vistaText.innerText = 'Doctor';
+                titulo.innerHTML = 'Mis <span class="fw-bold">Citas</span>';
+                subtitulo.innerText = 'Tu lista de pacientes para hoy';
+                nombrePerfil.innerText = 'Dr. Montoya';
+                avatarPerfil.innerText = 'JM';
+                filasTabla.forEach(fila => {
+                    if(fila.getAttribute('data-doctor') === 'Dr. Montoya') {
+                        fila.classList.remove('fila-oculta');
+                    } else {
+                        fila.classList.add('fila-oculta');
+                    }
+                });
+            } else if(rol === 'recepcion') {
+                vistaText.innerText = 'Recepción';
+                titulo.innerHTML = 'Agenda <span class="fw-bold">Recepción</span>';
+                subtitulo.innerText = 'Control de asistencia y asignación';
+                nombrePerfil.innerText = 'Recepción';
+                avatarPerfil.innerText = 'RC';
+                filasTabla.forEach(fila => fila.classList.remove('fila-oculta'));
+            }
+        }
+
+        // Lógica del Formulario de Nueva Cita
+        document.getElementById('formNuevaCita').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombrePaciente').value;
+            const doctor = document.getElementById('doctorAsignado').value;
+            const hora = document.getElementById('horaCita').value;
+            const rapida = document.getElementById('descRapida').value;
+            const idBadge = Date.now(); 
+            const tabla = document.getElementById('tablaCitas').getElementsByTagName('tbody')[0];
+            const nuevaFila = tabla.insertRow();
+            nuevaFila.setAttribute('data-hora', hora);
+            nuevaFila.setAttribute('data-doctor', doctor);
+            if(rolActual !== 'admin' && rolActual !== 'recepcion' && rolActual !== doctor) {
+                 nuevaFila.classList.add('fila-oculta');
+            }
+            nuevaFila.innerHTML = `
+                <td class="ps-4 fw-bold">${hora}</td>
+                <td><div class="fw-bold fs-6">${nombre}</div><div class="text-muted-glass small">ID: #NEW</div></td>
+                <td><div class="fw-bold">${rapida || "Consulta Regular"}</div><div class="text-white-50 small italic"><em>${doctor}</em></div></td>
+                <td class="text-center"><span class="badge badge-pendiente px-3 py-2 rounded-pill" id="badge-${idBadge}">Pendiente</span></td>
+                <td class="pe-4 text-end text-nowrap">
+                    <div class="btn-group me-1"><button class="btn btn-sm btn-outline-success border-0" onclick="marcarCompletada('badge-${idBadge}')">✔️</button><button class="btn btn-sm btn-outline-danger border-0" onclick="marcarCancelada('badge-${idBadge}')">❌</button></div>
+                    <button class="btn btn-sm btn-whatsapp me-1" onclick="enviarRecordatorio('${nombre}', '${hora}', '526671234567')">💬 WhatsApp</button>
+                    <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#expedienteModal" onclick="abrirExpediente('${nombre}', '--', '${doctor}')">🗂️ Expediente</button>
+                </td>`;
+            bootstrap.Modal.getInstance(document.getElementById('nuevaCitaModal')).hide();
+            this.reset();
+            actualizarBotones();
+        });
+
+        function abrirExpediente(nombre, edad, doctor) {
+            document.getElementById('expNombre').innerText = nombre;
+            document.getElementById('expEdad').innerText = edad;
+            document.getElementById('expDoctor').innerText = doctor;
+            document.getElementById('expId').innerText = Math.floor(10000 + Math.random() * 90000); 
+        }
+
+        document.getElementById('formNuevaNota').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const textoOriginal = btn.innerText;
+            btn.innerText = "Guardando...";
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.innerText = "¡Guardado con éxito!";
+                btn.classList.add('bg-success', 'text-white');
+                setTimeout(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('expedienteModal')).hide();
+                    this.reset();
+                    btn.innerText = textoOriginal;
+                    btn.classList.remove('bg-success', 'text-white');
+                    btn.disabled = false;
+                }, 1500);
+            }, 800);
+        });
+
+        function marcarCompletada(badgeId) {
+            const badge = document.getElementById(badgeId);
+            if(badge) {
+                badge.className = 'badge badge-completada px-3 py-2 rounded-pill';
+                badge.innerText = 'Completada';
+            }
+        }
+
+        function marcarCancelada(badgeId) {
+            if(confirm('¿Estás seguro de cancelar esta cita?')) {
+                const badge = document.getElementById(badgeId);
+                if(badge) {
+                    badge.className = 'badge badge-cancelada px-3 py-2 rounded-pill';
+                    badge.innerText = 'Cancelada';
+                }
+            }
+        }
+
+        function actualizarBotones() {
+            const ahora = new Date();
+            const filas = document.querySelectorAll('#tablaCitas tbody tr');
+            filas.forEach(fila => {
+                const horaData = fila.getAttribute('data-hora');
+                if(!horaData) return;
+                const [hora, min] = horaData.split(':');
+                const horaCita = new Date();
+                horaCita.setHours(parseInt(hora, 10), parseInt(min, 10), 0);
+                const diferenciaMs = horaCita - ahora;
+                const diferenciaMin = diferenciaMs / 60000;
+                const boton = fila.querySelector('.btn-whatsapp');
+                if(boton) {
+                    if (diferenciaMin > 0 && diferenciaMin <= 60) {
+                        boton.classList.add('btn-urgent');
+                        boton.innerText = "⚠️ Avisar";
+                    } else {
+                        boton.classList.remove('btn-urgent');
+                        boton.innerText = "💬 WhatsApp";
+                    }
+                }
+            });
+        }
+
+        function enviarRecordatorio(nombre, hora, tel) {
+            const mensaje = `Hola ${nombre}, te recordamos tu cita en la clínica a las ${hora}. ¡Te esperamos!`;
+            const url = `https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+        }
+
+        setInterval(actualizarBotones, 60000);
+        actualizarBotones(); 
+        cambiarRol('admin');
+    </script>
+</body>
+</html>
